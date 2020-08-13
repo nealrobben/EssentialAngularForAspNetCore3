@@ -88,4 +88,12 @@ export class Repository {
       .subscribe(() => this.getProducts());
   }
 
+  updateProduct(id: number, changes: Map<string, any>) {
+    let patch = [];
+    changes.forEach((value, key) =>
+      patch.push({ op: "replace", path: key, value: value }));
+    this.http.patch(`${productsUrl}/${id}`, patch)
+      .subscribe(() => this.getProducts());
+  }
+
 }

@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Collections.Generic;
 using ServerApp.Models.BindingTargets;
+using Microsoft.AspNetCore.JsonPatch;
+using System.Text.Json;
+using System.Reflection;
+using System.ComponentModel;
 
 namespace ServerApp.Controllers
 {
@@ -124,6 +128,31 @@ namespace ServerApp.Controllers
                     context.Attach(p.Supplier);
                 }
                 context.Update(p);
+                context.SaveChanges();
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
+        }
+
+        [HttpPatch("{id}")]
+        public IActionResult UpdateProduct(long id, [FromBody] JsonPatchDocument<ProductData> patch)
+        {
+            Product product = context.Products
+                .Include(p => p.Supplier)
+                .First(p => p.ProductId == id);
+
+            ProductData pdata = new ProductData { Product = product };
+            patch.ApplyTo(pdata, ModelState);
+
+            if (ModelState.IsValid && TryValidateModel(pdata))
+            {
+                if (product.Supplier != null && product.Supplier.SupplierId != 0)
+                {
+                    context.Attach(product.Supplier);
+                }
                 context.SaveChanges();
                 return Ok();
             }
