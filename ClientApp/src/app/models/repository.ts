@@ -70,4 +70,22 @@ export class Repository {
       });
   }
 
+  replaceProduct(prod: Product) {
+    let data = {
+      name: prod.name, category: prod.category,
+      description: prod.description, price: prod.price,
+      supplier: prod.supplier ? prod.supplier.supplierId : 0
+    };
+    this.http.put(`${productsUrl}/${prod.productId}`, data)
+      .subscribe(() => this.getProducts());
+  }
+
+  replaceSupplier(supp: Supplier) {
+    let data = {
+      name: supp.name, city: supp.city, state: supp.state
+    };
+    this.http.put(`${suppliersUrl}/${supp.supplierId}`, data)
+      .subscribe(() => this.getProducts());
+  }
+
 }
