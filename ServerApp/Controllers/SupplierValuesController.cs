@@ -50,5 +50,12 @@ namespace ServerApp.Controllers
                 return BadRequest(ModelState);
             }
         }
+
+        [HttpDelete("{id}")]
+        public void DeleteSupplier(long id)
+        {
+            context.Remove(new Supplier { SupplierId = id });
+            context.SaveChanges();
+        }
     }
 }

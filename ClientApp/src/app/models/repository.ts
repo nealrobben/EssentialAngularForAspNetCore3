@@ -41,6 +41,11 @@ export class Repository {
     this.http.get<Product[]>(url).subscribe(prods => this.products = prods);
   }
 
+  getSuppliers() {
+    this.http.get<Supplier[]>(suppliersUrl)
+      .subscribe(sups => this.suppliers = sups);
+  }
+
   createProduct(prod: Product) {
     let data = {
       name: prod.name, category: prod.category,
@@ -94,6 +99,19 @@ export class Repository {
       patch.push({ op: "replace", path: key, value: value }));
     this.http.patch(`${productsUrl}/${id}`, patch)
       .subscribe(() => this.getProducts());
+  }
+
+  deleteProduct(id: number) {
+    this.http.delete(`${productsUrl}/${id}`)
+      .subscribe(() => this.getProducts());
+  }
+
+  deleteSupplier(id: number) {
+    this.http.delete(`${suppliersUrl}/${id}`)
+      .subscribe(() => {
+        this.getProducts();
+        this.getSuppliers();
+      });
   }
 
 }

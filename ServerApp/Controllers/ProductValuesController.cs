@@ -161,5 +161,12 @@ namespace ServerApp.Controllers
                 return BadRequest(ModelState);
             }
         }
+
+        [HttpDelete("{id}")]
+        public void DeleteProduct(long id)
+        {
+            context.Products.Remove(new Product { ProductId = id });
+            context.SaveChanges();
+        }
     }
 }
