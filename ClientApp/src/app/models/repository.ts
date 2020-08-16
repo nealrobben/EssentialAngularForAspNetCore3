@@ -1,7 +1,6 @@
 import { Product } from "./product.model";
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Filter } from "./configClasses.repository";
 import { Supplier } from "./supplier.model";
 import { Filter, Pagination } from "./configClasses.repository";
 
