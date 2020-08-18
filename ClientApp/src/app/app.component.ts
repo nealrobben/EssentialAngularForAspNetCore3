@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Repository } from "./models/repository";
 import { Product } from "./models/product.model";
 import { Supplier } from "./models/supplier.model";
+import { ErrorHandlerService } from "./errorHandler.service";
 
 @Component({
   selector: 'app-root',
@@ -11,8 +12,13 @@ import { Supplier } from "./models/supplier.model";
 export class AppComponent {
 
   title = 'SportsStore';
+  private lastError: string[];
 
-  constructor(private repo: Repository) { }
+  constructor(private repo: Repository, errorService: ErrorHandlerService) {
+    errorService.errors.subscribe(error => {
+      this.lastError = error;
+    });
+  }
 
   get product(): Product {
     return this.repo.product;
@@ -59,6 +65,14 @@ export class AppComponent {
 
   deleteSupplier() {
     this.repo.deleteSupplier(2);
+  }
+
+  get error(): string[] {
+    return this.lastError;
+  }
+
+  clearError() {
+    this.lastError = null;
   }
 
 }
