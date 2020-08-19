@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.JsonPatch;
 using System.Text.Json;
 using System.Reflection;
 using System.ComponentModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ServerApp.Controllers
 {
     [Route("api/products")]
     [ApiController]
+    [Authorize(Roles = "Administrator")]
     public class ProductValuesController : Controller
     {
         private readonly DataContext context;
@@ -23,6 +25,7 @@ namespace ServerApp.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public Product GetProduct(long id)
         {
             Product result = context.Products
@@ -57,6 +60,7 @@ namespace ServerApp.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult GetProducts(string category, string search, bool related = false, bool metadata = false)
         {
             IQueryable<Product> query = context.Products;
@@ -74,7 +78,7 @@ namespace ServerApp.Controllers
                 || p.Description.ToLower().Contains(searchLower));
             }
 
-            if (related)
+            if (related && HttpContext.User.IsInRole("Administrator"))
             {
                 query = query.Include(p => p.Supplier).Include(p => p.Ratings);
                 List<Product> data = query.ToList();
