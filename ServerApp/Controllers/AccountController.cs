@@ -60,6 +60,23 @@ namespace ServerApp.Controllers
             }
             return false;
         }
+
+        [HttpPost("/api/account/login")]
+        public async Task<IActionResult> Login([FromBody] LoginViewModel creds)
+        {
+            if (ModelState.IsValid && await DoLogin(creds))
+            {
+                return Ok("true");
+            }
+            return BadRequest();
+        }
+
+        [HttpPost("/api/account/logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await signInManager.SignOutAsync();
+            return Ok();
+        }
     }
 
     public class LoginViewModel
