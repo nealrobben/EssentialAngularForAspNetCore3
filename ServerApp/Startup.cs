@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace ServerApp
 {
@@ -59,10 +62,14 @@ namespace ServerApp
                 options.Cookie.HttpOnly = false;
                 options.Cookie.IsEssential = true;
             });
+
+            services.AddAntiforgery(options => {
+                options.HeaderName = "X-XSRF-TOKEN";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider services)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider services, IAntiforgery antiforgery)
         {
             if (env.IsDevelopment())
             {
@@ -82,6 +89,24 @@ namespace ServerApp
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.Use(nextDelegate => context => {
+                string path = context.Request.Path.Value;
+                string[] directUrls = { "/admin", "/store", "/cart", "checkout" };
+                if (path.StartsWith("/api") || string.Equals("/", path)
+                || directUrls.Any(url => path.StartsWith(url)))
+                {
+                    var tokens = antiforgery.GetAndStoreTokens(context);
+                    context.Response.Cookies.Append("XSRF-TOKEN",
+                    tokens.RequestToken, new CookieOptions()
+                    {
+                        HttpOnly = false,
+                        Secure = false,
+                        IsEssential = true
+                    });
+                }
+                return nextDelegate(context);
+            });
 
             app.UseEndpoints(endpoints =>
             {

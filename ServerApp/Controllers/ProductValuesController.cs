@@ -5,9 +5,6 @@ using System.Linq;
 using System.Collections.Generic;
 using ServerApp.Models.BindingTargets;
 using Microsoft.AspNetCore.JsonPatch;
-using System.Text.Json;
-using System.Reflection;
-using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ServerApp.Controllers
@@ -15,6 +12,7 @@ namespace ServerApp.Controllers
     [Route("api/products")]
     [ApiController]
     [Authorize(Roles = "Administrator")]
+    [AutoValidateAntiforgeryToken]
     public class ProductValuesController : Controller
     {
         private readonly DataContext context;
