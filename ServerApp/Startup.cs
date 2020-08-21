@@ -17,9 +17,16 @@ namespace ServerApp
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+            .SetBasePath(env.ContentRootPath)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            .AddEnvironmentVariables()
+            .AddCommandLine(System.Environment.GetCommandLineArgs()
+            .Skip(1).ToArray());
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -69,7 +76,9 @@ namespace ServerApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider services, IAntiforgery antiforgery)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, 
+            IServiceProvider services, IAntiforgery antiforgery, 
+            IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
@@ -140,8 +149,17 @@ namespace ServerApp
                 }
             });
 
-            SeedData.SeedDatabase(services.GetRequiredService<DataContext>());
-            IdentitySeedData.SeedDatabase(services).Wait();
+            //SeedData.SeedDatabase(services.GetRequiredService<DataContext>());
+            //IdentitySeedData.SeedDatabase(services).Wait();
+
+            if ((Configuration["INITDB"] ?? "false") == "true")
+            {
+                System.Console.WriteLine("Preparing Database...");
+                SeedData.SeedDatabase(services.GetRequiredService<DataContext>());
+                IdentitySeedData.SeedDatabase(services).Wait();
+                System.Console.WriteLine("Database Preparation Complete");
+                lifetime.StopApplication();
+            }
         }
     }
 }
